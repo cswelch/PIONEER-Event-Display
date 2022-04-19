@@ -1,0 +1,6 @@
+[submodule "shared"]
+	path = shared
+	url = git@github.com:PIONEER-Experiment/shared.git
+[submodule "MonteCarlo"]
+	path = MonteCarlo
+	url = git@github.com:PIONEER-Experiment/MonteCarlo.git
