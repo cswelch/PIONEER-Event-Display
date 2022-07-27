@@ -31,11 +31,11 @@ If you are using a container, skip this section.
 
 **Prerequisites**
 
-You are required to install the following dependencies Geant4 V4.11.00, ROOT V6.27/01 and XercesC 3.2.3 (newer versions might work as well) to compile and run the simulation as well as CMake to build the binaries. It is up to your taste if your prefer a cmake version with graphical user interface (e.g. ccmake). Additionaly, you will need a recent version of python to build the geometries.
+You are required to install the following dependencies Geant4 V4.11.00, ROOT (any more or less recent version will do) and XercesC 3.2.3 (newer versions might work as well) to compile and run the simulation as well as CMake to build the binaries. It is up to your taste if your prefer a cmake version with graphical user interface (e.g. ccmake). Additionaly, you will need a recent version of python to build the geometries.
 
 To install geant yourself (linux), you can complete the following steps:
 ```
-mdkir geant4; cd geant4
+mkdir geant4; cd geant4
 wget http://cern.ch/geant4-data/releases/geant4-v11.0.0.tar.gz
 tar -zxvf geant4-v11.0.0.tar.gz
 mkdir build; mkdir install
@@ -43,6 +43,7 @@ cd build
 cmake -DGEANT4_INSTALL_DATA=ON \
       -DGEANT4_USE_GDML=ON \
       -DGEANT4_USE_PYTHON=ON \
+      -DGEANT4_BUILD_TLS_MODEL=global-dynamic \
       -DGEANT4_USE_OPENGL_X11=ON \
       -DBUILD_STATIC_LIBS=ON \
       -DCMAKE_INSTALL_PREFIX=../install \
