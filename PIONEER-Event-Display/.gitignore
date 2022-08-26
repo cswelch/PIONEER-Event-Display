@@ -1,0 +1,3 @@
+#Ignore all Python cache and .root files. These should only be stored locally.
+*.pyc
+*.root
