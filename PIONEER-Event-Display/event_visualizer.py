@@ -15,7 +15,7 @@ assumption that 100 strips comprise each plate in the simulation data supplied.
 '''
 
 from logging.config import IDENTIFIER
-from typing import overload
+from typing import ChainMap, overload
 import ROOT as r
 import numpy as np
 from matplotlib import pyplot as plt
@@ -25,7 +25,6 @@ import calo_analysis
 
 
 class Event_Visualizer:
-    #TODO: Reimplement is_event_DAR along with select_events()
     '''
     The primary method that this class is used for. Uses helper functions below to give a visualization of events satisfying the specified condition(s).
     input_file: The .root file that contains the data of interest. Should have been extracted as a TFile object before passing as a parameter.
@@ -37,32 +36,41 @@ class Event_Visualizer:
     def visualize_event(self, input_file, event_index, is_event_DAR = 2, display_text_output = False):
         #Get the tree from the input file. This tree is currently in a nested structure. The base of the tree is called "sim," with two branches that
         #are relevant here - calo and atar.  Each of these branches contains the data we are interested in.
-        
         tree = input_file.Get("sim")
+        # TODO <<< May implement TChain to get events from all 8 threads / files; currently just using hadd command to combine .root files together
+        # after running sim. >>>
         # chain = r.TChain("sim")
-        # chain.Add("pienu00000_*.root")
-        # print(chain.GetEntryList())
-        
+        # chain.Add("pienu00000-0*.root")
+
         #Use max edep per plane as a heuristic to distinguish between DIFs and DARs.
         max_Es = []
 
         #Keep track of gap times.
         gap_times = []
 
-        #Process the event whose index we are given.
-        e = self.process_event(tree, event_index)
 
-        if display_text_output:
-            self.display_event(e)
+        # TODO Need to reimplement:
+        #   1) Selection of events (using select_events() method)
+        #   2) Cuts on variables such as max_E, is_event_DAR
+        # TODO <<< Debugging stuff for events being shown 1 at a time. >>>
+        i = 0
+        #Process each event in the tree and display the results sequentially.
+        for entry in tree:
+            # TODO <<< Debugging stuff for events being shown 1 at a time. >>>
+            print("Event # ", i)
+            i += 1
+
+            e = self.process_event(tree, entry)
+
+            if display_text_output:
+                self.display_event(e)
         
-        # TODO Need to incorporate 1) selection of events and 2) discrimination by max_E
-    
-        self.plot_event(e, 50)
+            self.plot_event(e, 50)
 
-        for gt in e.gap_times:
-            gap_times.append(gt)
+            for gt in e.gap_times:
+                gap_times.append(gt)
 
-        max_Es.append(e.max_E)
+            max_Es.append(e.max_E)
             
         return (max_Es, gap_times)
 
@@ -74,7 +82,7 @@ class Event_Visualizer:
     Also extract the z (plane #) vs. time data. The third element of the tuples contained in this list and the x and y lists will contain corresponding colors to represent
     when particles have decayed.
     '''
-    def process_event(self, tree, event_index):
+    def process_event(self, tree, entry):
         #Arrays to store pixel information to be added.
         pixel_times = []
         pixel_IDs = []
@@ -88,18 +96,27 @@ class Event_Visualizer:
         #Init time value so 1st loop below works.
         cur_time = 0
 
-        for branch in tree:
-            #Loop over the atar branch to get its relevant data.
-            for atar in branch.atar:
-                pixel_times.append(atar.GetTime())
-                pixel_IDs.append(atar.GetPixelID())
-                pixel_edep.append(atar.GetEdep())
-                pixel_pdgs.append(atar.GetPDGID())
+        #Loop over the atar branch to get its relevant data.
+        for atar in entry.atar:
+            pixel_times.append(atar.GetTime())
+            pixel_IDs.append(atar.GetPixelID())
+            pixel_edep.append(atar.GetEdep())
+            pixel_pdgs.append(atar.GetPDGID())
 
-            #Loop over the sipm branch to get the IDs of the SiPMs that were hit.
-        for sipm in branch.sipm:
+        #Loop over the sipm branch to get the IDs of the SiPMs that were hit.
+        for sipm in entry.sipm:
             event.sipm_ids.append(sipm.GetID())
             event.sipm_edeps.append(sipm.GetNHits())
+
+        # TODO <<< Printing temp SiPM ID for debugging; how do we correlate the SiPM IDs to the edep in each event? >>>
+        #Loop over the calorimeter entries.
+        """ for calo in entry.calo:
+            print("Edep Size: ", calo.GetEdepSize())
+            for i in range(calo.GetEdepSize()):
+                event.sipm_edeps.append(calo.GetEdepAt(i))
+                print("Next val: ", calo.GetEdepAt(i))
+
+        entry.info.Print() """
         
         #Extract x vs. t, y vs. t, and z vs. t data. Also add indexed color coding to represent different particles.
         for i in range(len(pixel_IDs)):
@@ -140,11 +157,9 @@ class Event_Visualizer:
         event.pixel_pdgs = pixel_pdgs
 
 
-        #TODO <<<UNCOMMENT CALO CODE WHEN READY>>>
         #Extract all (theta, phi) locations of the SiPMs from the GDML file.
         global_crys_dict = calo_analysis.get_crystal_data()
         
-        #TODO <<<UNCOMMENT CALO CODE WHEN READY>>>
         # Use the IDs of the SiPMs hit from the event to get the corresponding values from the dictionary of (ID: (r, theta, phi)) values (global_crys_dict).
         event.r_theta_phis
         for id in event.sipm_ids:
@@ -218,15 +233,18 @@ class Event_Visualizer:
         ax4.legend()
         #ax4.set_xlim(0, num_planes)
 
-        #TODO <<<UNCOMMENT CALO CODE WHEN READY>>>
-        #Here, we plot the calo analysis data.
-
-        # Plot scatterplot of energy deposited in each SIPM "pixel" in the calorimeter. Also check to see if only 1 calo entry
-        # is present - in this case, the calo ID could be marked as a single volume and we just get 1000, which we don't want to count. The points are
-        # color coded by energy deposition and surrounded by a black border to make faint colors easier to distinguish from the white background.
+        # Here, we plot the calo analysis data. Create a scatterplot of energy deposited in each SIPM "pixel" in the calorimeter. Also check to see if 
+        # only 1 calo entry is present - in this case, the calo ID could be marked as a single volume and we just get 1000, which we don't want to count. 
+        # The points are color-coded by energy deposition and surrounded by a black border to make faint colors easier to distinguish from the white 
+        # background.
         color_range = event.sipm_edeps
         thetas = [coords[1] for coords in event.r_theta_phis]
         phis = [coords[2] for coords in event.r_theta_phis]
+
+        # TODO <<< For debugging SiPM vs. Edep data shown in color range. >>>
+        """ print("Thetas: ", thetas)
+        print("Phis: ", phis)
+        print("color_range: ", color_range) """
 
         plot5 = ax5.scatter(thetas, phis, c=color_range, cmap="YlOrRd")
         ax5.set_xlabel("Theta (rad)")

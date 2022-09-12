@@ -1,3 +1,4 @@
-#Ignore all Python cache and .root files. These should only be stored locally.
+#Ignore all vscode, Python cache, and .root files. These should only be stored locally.
+../.vscode
 *.pyc
 *.root
