@@ -197,12 +197,12 @@ class Event_Visualizer:
     def plot_event(self, event, num_planes):
 
         # Create a 2x4 table of plots.
-        fig, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(nrows=2, ncols=4, figsize=(30, 15))
+        fig, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))
 
         plt.rc('font', size=10) #controls default text size
-        plt.rc('axes', titlesize=24) #fontsize of the title
-        plt.rc('axes', labelsize=18) #fontsize of the x and y labels
-        plt.rc('legend', fontsize=10) #fontsize of the legend
+        plt.rc('axes', titlesize=14) #fontsize of the title
+        plt.rc('axes', labelsize=12) #fontsize of the x and y labels
+        plt.rc('legend', fontsize=8) #fontsize of the legend
 
         self.plot_with_color_legend(ax1, event.z_data, event.x_data, event.pixel_pdgs)
         ax1.set_title("x vs. z")
@@ -255,7 +255,7 @@ class Event_Visualizer:
         ax5.set_xlim(0, 3.2)
         ax5.set_ylim(-3.2, 3.2)
         cbar = fig.colorbar(plot5, ax=ax5)
-        cbar.set_label('Amount of Energy Deposited (MeV)')
+        cbar.set_label('Number of Optical Photon Hits')
 
         plt.tight_layout(h_pad=5)
         plt.ion()
