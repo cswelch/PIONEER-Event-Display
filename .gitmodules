@@ -1,6 +1,8 @@
 [submodule "shared"]
 	path = shared
 	url = git@github.com:PIONEER-Experiment/shared.git
+	ignore = all
 [submodule "MonteCarlo"]
 	path = MonteCarlo
 	url = git@github.com:PIONEER-Experiment/MonteCarlo.git
+	ignore = all

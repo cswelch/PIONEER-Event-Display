@@ -3,5 +3,6 @@
 *.pyc
 *.root
 
-MonteCarlo/
-shared/
+../MonteCarlo/
+../shared/
+../run/

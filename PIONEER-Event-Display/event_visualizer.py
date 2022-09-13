@@ -18,8 +18,10 @@ from logging.config import IDENTIFIER
 from typing import ChainMap, overload
 import ROOT as r
 import numpy as np
+import time
 from matplotlib import pyplot as plt
 from matplotlib.ticker import StrMethodFormatter
+
 from Event import Event
 import calo_analysis
 
@@ -256,7 +258,11 @@ class Event_Visualizer:
         cbar.set_label('Amount of Energy Deposited (MeV)')
 
         plt.tight_layout(h_pad=5)
+        plt.ion()
         plt.show()
+        # Sleep for a short while to make sure plots don't flash by too fast on-screen.
+        plt.pause(1)
+        plt.close()
 
 
     #For each color in a list of color labels for different particles, plot the corresponding data.
