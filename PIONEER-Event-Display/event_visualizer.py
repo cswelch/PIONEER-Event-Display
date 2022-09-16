@@ -35,7 +35,7 @@ class Event_Visualizer:
     display_text_output (optional): Value of True / False, controls whether we do / do not have our event data displayed in text format. Defaults
                                     to False (no text displayed).
     '''
-    def visualize_event(self, input_file, event_index, is_event_DAR = 2, display_text_output = False):
+    def visualize_event(self, input_file, is_event_DAR = 2, display_text_output = False):
         #Get the tree from the input file. This tree is currently in a nested structure. The base of the tree is called "sim," with two branches that
         #are relevant here - calo and atar.  Each of these branches contains the data we are interested in.
         tree = input_file.Get("sim")
@@ -67,7 +67,7 @@ class Event_Visualizer:
             if display_text_output:
                 self.display_event(e)
         
-            self.plot_event(e, 50)
+            self.plot_event(e, i, 50)
 
             for gt in e.gap_times:
                 gap_times.append(gt)
@@ -194,7 +194,7 @@ class Event_Visualizer:
 
     #Plot the following data from our event: x vs. t, y vs. t, z vs. t, E vs. z, and energy deposited in calorimeter by (theta, phi). The graphs 
     #will show the color-coding system used to represent different particles. Display 0 to num_planes on plots including the z variable.
-    def plot_event(self, event, num_planes):
+    def plot_event(self, event, event_index, num_planes):
 
         # Create a 2x4 table of plots.
         fig, ((ax1, ax2, ax3, ax4), (ax5, ax6, ax7, ax8)) = plt.subplots(nrows=2, ncols=4, figsize=(20, 10))
@@ -260,6 +260,8 @@ class Event_Visualizer:
         plt.tight_layout(h_pad=5)
         plt.ion()
         plt.show()
+        plt.savefig("/home/cole/Pictures/EventDisplayImages/Event_" + str(event_index))
+        # TODO Change this time perhaps, possibly use delay / save params?  Also need to add options to stop on a plot, save plots, and exit the program.
         # Sleep for a short while to make sure plots don't flash by too fast on-screen.
         plt.pause(1)
         plt.close()
@@ -268,7 +270,7 @@ class Event_Visualizer:
     #For each color in a list of color labels for different particles, plot the corresponding data.
     def plot_with_color_legend(self, ax, x_coords, y_coords, pixel_pdgs):
         #Store colors and corresponding particle type labels in one place for ease of editing.
-        colors = ["r", "b", "g", "y", "m"]
+        colors = ["r", "b", "lime", "y", "m"]
         labels = ["Pion", "Positron", "Electron", "Antimuon", "Muon"]
         particle_IDs = [211, -11, 11, -13, 13]
         
@@ -279,7 +281,7 @@ class Event_Visualizer:
         cur_data_to_plot = []
         other_to_plot = []
         other_IDs = []
-        other_colors = ["k", "gray", "cyan", "indigo", "teal", "lime"]
+        other_colors = ["k", "gray", "cyan", "indigo", "teal", "g"]
 
         #For each color, extract all pdgs of that color and display them on a scatter plot.
         for i in range(0, len(particle_IDs)):
